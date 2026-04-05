@@ -93,9 +93,9 @@
 
 | Node | Role | IP | OS |
 |---|---|---|---|
-| `ubuntu-vm` | Control Plane | 192.168.1.x | Ubuntu 24.04 |
+| `ubuntu-vm` | Control Plane | 192.168.1.181 | Ubuntu 24.04 |
 | `minty` | Worker | 192.168.1.210 | Linux |
-| `pve2` | Worker | 192.168.1.x | Proxmox VE |
+| `pve2` | Worker | 192.168.1.204 | Proxmox VE |
 
 ### Network IP Allocation (MetalLB Pool: 192.168.1.240–250)
 
@@ -232,27 +232,7 @@ spec:
 
 This project involved diagnosing and resolving production-grade Kubernetes issues:
 
-### 1. OOM Kill — Pod Crash Loop (130+ Restarts)
-**Problem:** `wazuh-manager-master-0` was OOM killed repeatedly due to 512Mi memory limit being insufficient for the vulnerability scanner feed process.
-
-**Diagnosis:**
-```bash
-kubectl describe pod wazuh-manager-master-0 -n wazuh | grep "Exit Code"
-# Exit Code: 137 → OOM Kill confirmed
-```
-
-**Fix:** Updated base StatefulSet manifest memory limits from `512Mi` to `2Gi`.
-
----
-
-### 2. Pod Pending — PersistentVolume Node Affinity + Disk Pressure
-**Problem:** `wazuh-manager-master-0` stuck in `Pending` state. PV was bound to a node with disk pressure taint (`node.kubernetes.io/disk-pressure:NoSchedule`).
-
-**Fix:** Expanded disk space on the affected node — taint automatically removed by Kubernetes once pressure resolved.
-
----
-
-### 3. Nginx Ingress IP Change After Reboot
+### 1. Nginx Ingress IP Change After Reboot
 **Problem:** MetalLB reassigned a different IP to the Ingress controller after restart, breaking `myapp.local` DNS resolution.
 
 **Fix:** Assigned a static IP via MetalLB annotation:
@@ -264,7 +244,7 @@ kubectl annotate svc ingress-nginx-controller \
 
 ---
 
-### 4. ArgoCD TLS Handshake Failure
+### 2. ArgoCD TLS Handshake Failure
 **Problem:** ArgoCD repo-server failing with TLS handshake errors when connecting to GitHub despite outbound internet working correctly.
 
 **Fix:** Patched ArgoCD server to run in insecure mode, disabled repo-server TLS via ConfigMap, and connected repo via Kubernetes secret:
