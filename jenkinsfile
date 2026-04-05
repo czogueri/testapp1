@@ -4,7 +4,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/czogueri/testapp1.git'
+                    url: 'https://github.com/czogueri/CI-CD-pipeline.git'
             }
         }
         stage('Validate Manifests') {
